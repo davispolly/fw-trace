@@ -92,14 +92,15 @@ def main(src,dst,protocol,port,project,network,src_tag,dst_tag,verbose, wait=Tru
 	#if destination ip is part of the network, ingress firewall rules need to be checked
 	#if source and destination are both part of the network, bot ingress and egress rules will be checked
     for region in response['items']: 
-		for subnetwork in response['items'][region]['subnetworks']:
-			if network == subnetwork['network'].rpartition('/')[2]: 
-				if ipaddress.ip_address(src) in ipaddress.ip_network(subnetwork['ipCidrRange']):
-					egress_check = True
-					if str(verbose) <> "None" : print ('Source IP %s is part of subnet "%s", will evaluate egress firewall rules' % (src,subnetwork['name']))
-				if ipaddress.ip_address(dst) in ipaddress.ip_network(subnetwork['ipCidrRange']):
-					ingress_check = True
-					if str(verbose) <> "None" : print ('Destination IP %s is part of subnet "%s", will evaluate ingress firewall rules' % (dst,subnetwork['name']))
+		if 'subnetworks' in response['items'][region]:
+			for subnetwork in response['items'][region]['subnetworks']:
+				if network == subnetwork['network'].rpartition('/')[2]: 
+					if ipaddress.ip_address(src) in ipaddress.ip_network(subnetwork['ipCidrRange']):
+						egress_check = True
+						if str(verbose) <> "None" : print ('Source IP %s is part of subnet "%s", will evaluate egress firewall rules' % (src,subnetwork['name']))
+					if ipaddress.ip_address(dst) in ipaddress.ip_network(subnetwork['ipCidrRange']):
+						ingress_check = True
+						if str(verbose) <> "None" : print ('Destination IP %s is part of subnet "%s", will evaluate ingress firewall rules' % (dst,subnetwork['name']))
 
     if (not egress_check) and (not ingress_check):
 		print('Neither source or destination IP belongs to network "%s", firewall rules for this network are not applicable' % network) 	
